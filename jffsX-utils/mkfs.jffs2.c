@@ -67,7 +67,9 @@
 #include <getopt.h>
 #ifndef WITHOUT_XATTR
 #include <sys/xattr.h>
+#ifndef WITHOUT_ACL
 #include <sys/acl.h>
+#endif
 #endif
 #include <byteswap.h>
 #include <crc32.h>
@@ -85,6 +87,10 @@
 #define mkfs_debug_msg(a...)	{ }
 
 #define PAD(x) (((x)+3)&~3)
+
+#ifndef IFTODT
+#define IFTODT(mode)    (((mode) & 0170000) >> 12)
+#endif
 
 struct filesystem_entry {
 	char *name;					/* Name of this directory (think basename) */
@@ -1006,6 +1012,7 @@ static struct {
 	{ 0, NULL, 0 }
 };
 
+#ifndef WITHOUT_ACL
 static void formalize_posix_acl(void *xvalue, int *value_len)
 {
 	struct posix_acl_xattr_header *pacl_header;
@@ -1057,6 +1064,7 @@ static void formalize_posix_acl(void *xvalue, int *value_len)
 	memcpy(xvalue, buffer, offset);
 	*value_len = offset;
 }
+#endif
 
 static xattr_entry_t *create_xattr_entry(int xprefix, char *xname, char *xvalue, int value_len)
 {
@@ -1111,9 +1119,11 @@ static xattr_entry_t *find_xattr_entry(int xprefix, char *xname, char *xvalue, i
 	if (!xentry_hash)
 		xentry_hash = xcalloc(1, sizeof(xe) * XATTRENTRY_HASHSIZE);
 
+#ifndef WITHOUT_ACL
 	if (xprefix == JFFS2_XPREFIX_ACL_ACCESS
 			|| xprefix == JFFS2_XPREFIX_ACL_DEFAULT)
 		formalize_posix_acl(xvalue, &value_len);
+#endif
 
 	name_len = strlen(xname);
 	index = (mtd_crc32(0, xname, name_len) ^ mtd_crc32(0, xvalue, value_len)) % XATTRENTRY_HASHSIZE;
@@ -1382,7 +1392,9 @@ static struct option long_options[] = {
 #ifndef WITHOUT_XATTR
 	{"with-xattr", 0, NULL, 1000 },
 	{"with-selinux", 0, NULL, 1001 },
+#ifndef WITHOUT_ACL
 	{"with-posix-acl", 0, NULL, 1002 },
+#endif
 #endif
 	{NULL, 0, NULL, 0}
 };
