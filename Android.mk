@@ -17,6 +17,37 @@ LOCAL_MODULE := libmtd-utils
 LOCAL_STATIC_LIBRARIES := libcutils libc
 include $(BUILD_STATIC_LIBRARY)
 
+# mkfs.jffs2
+include $(CLEAR_VARS)
+LOCAL_SRC_FILES := \
+	jffsX-utils/mkfs.jffs2.c \
+	jffsX-utils/rbtree.h \
+	jffsX-utils/compr_zlib.c \
+	jffsX-utils/compr.h \
+	jffsX-utils/rbtree.c \
+	jffsX-utils/compr_lzo.c \
+	jffsX-utils/compr.c \
+	jffsX-utils/compr_rtime.c
+
+LOCAL_CFLAGS += \
+	-DWITHOUT_LZO \
+	-DWITHOUT_ACL
+
+LOCAL_C_INCLUDES += \
+	$(LOCAL_PATH)/include \
+	external/zlib
+
+LOCAL_MODULE := utility_mkfs_jffs2
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_CLASS := UTILITY_EXECUTABLES
+LOCAL_MODULE_PATH := $(PRODUCT_OUT)/utilities
+LOCAL_UNSTRIPPED_PATH := $(PRODUCT_OUT)/symbols/utilities
+LOCAL_MODULE_STEM := mkfs.jffs2
+LOCAL_STATIC_LIBRARIES := libmtd-utils libcutils libc libz
+LOCAL_FORCE_STATIC_EXECUTABLE := true
+LOCAL_PACK_MODULE_RELOCATIONS := false
+include $(BUILD_EXECUTABLE)
+
 # UBI library
 include $(CLEAR_VARS)
 LOCAL_SRC_FILES := \
